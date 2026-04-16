@@ -1,0 +1,4 @@
+{
+  "upstream": "aws-actions/configure-aws-credentials",
+  "version": "v6.0.0"
+}
