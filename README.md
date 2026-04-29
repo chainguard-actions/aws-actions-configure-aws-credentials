@@ -1,5 +1,7 @@
 # aws-actions/configure-aws-credentials
 
+Configure AWS credential environment variables for use in other GitHub Actions.
+
 Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at [https://github.com/aws-actions/configure-aws-credentials](https://github.com/aws-actions/configure-aws-credentials).
 
 ## Versions
