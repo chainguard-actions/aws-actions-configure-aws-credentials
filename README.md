@@ -1,6 +1,12 @@
 # aws-actions/configure-aws-credentials
 
-Hardened GitHub Action by [Chainguard](https://www.chainguard.dev).
+Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at [https://github.com/aws-actions/configure-aws-credentials](https://github.com/aws-actions/configure-aws-credentials).
+
+## Versions
+
+| Version | Tag | Upstream commit |
+|---------|-----|-----------------|
+| v6.0.0 | [`v6.0.0`](https://github.com/chainguard-actions/configure-aws-credentials/tree/v6.0.0) | — |
 
 ## Privacy
 
