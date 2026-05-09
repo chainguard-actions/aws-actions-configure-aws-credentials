@@ -1,4 +1,6 @@
 {
-  "upstream": "aws-actions/configure-aws-credentials",
-  "version": "v6.0.0"
+  "owner": "aws-actions",
+  "repo": "configure-aws-credentials",
+  "version": "",
+  "url": "https://github.com/aws-actions/configure-aws-credentials"
 }

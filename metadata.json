@@ -2,5 +2,6 @@
   "owner": "aws-actions",
   "name": "configure-aws-credentials",
   "visibility": "internal",
-  "description": "Configure AWS credential environment variables for use in other GitHub Actions."
+  "description": "Configure AWS credential environment variables for use in other GitHub Actions.",
+  "block_publish": false
 }
