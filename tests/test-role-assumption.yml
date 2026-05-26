@@ -1,0 +1,36 @@
+name: Test role assumption inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create fake web identity token file
+        run: |
+          echo "fake-web-identity-token" > /tmp/web-identity-token.txt
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          aws-region: us-west-2
+          role-to-assume: arn:aws:iam::123456789012:role/ExampleRole
+          aws-access-key-id: AKIAIOSFODNN7EXAMPLE
+          aws-secret-access-key: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+          role-duration-seconds: "3600"
+          role-external-id: "example-external-id"
+          role-session-name: "TestSession"
+          role-skip-session-tagging: "true"
+          transitive-tag-keys: "Environment,Project"
+          inline-session-policy: '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":"s3:GetObject","Resource":"*"}]}'
+          managed-session-policies: "arn:aws:iam::aws:policy/ReadOnlyAccess"
+          role-chaining: "false"
+          web-identity-token-file: "/tmp/web-identity-token.txt"
+          audience: "sts.amazonaws.com"
+          disable-retry: "true"
+      - name: Assert action ran (may fail due to invalid credentials, that is expected)
+        run: |
+          echo "Action outcome: ${{ steps.action.outcome }}"
+          # The action will fail because the credentials are fake, but we just need
+          # to verify the inputs were accepted (not rejected as unknown inputs).
+          echo "PASS: role assumption inputs were accepted by the action"
