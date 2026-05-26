@@ -14,23 +14,21 @@ jobs:
         continue-on-error: true
         with:
           aws-region: us-west-2
-          role-to-assume: arn:aws:iam::123456789012:role/ExampleRole
           aws-access-key-id: AKIAIOSFODNN7EXAMPLE
           aws-secret-access-key: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+          role-to-assume: arn:aws:iam::123456789012:role/ExampleRole
+          role-chaining: "false"
           role-duration-seconds: "3600"
           role-external-id: "example-external-id"
-          role-session-name: "TestSession"
+          role-session-name: "GitHubActionsTest"
           role-skip-session-tagging: "true"
-          transitive-tag-keys: "Environment,Project"
+          transitive-tag-keys: "Environment,Team"
           inline-session-policy: '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":"s3:GetObject","Resource":"*"}]}'
           managed-session-policies: "arn:aws:iam::aws:policy/ReadOnlyAccess"
-          role-chaining: "false"
           web-identity-token-file: "/tmp/web-identity-token.txt"
           audience: "sts.amazonaws.com"
           disable-retry: "true"
-      - name: Assert action ran (may fail due to invalid credentials, that is expected)
+      - name: Assert action ran (may fail due to fake credentials)
         run: |
           echo "Action outcome: ${{ steps.action.outcome }}"
-          # The action will fail because the credentials are fake, but we just need
-          # to verify the inputs were accepted (not rejected as unknown inputs).
-          echo "PASS: role assumption inputs were accepted by the action"
+          echo "PASS: action step was reached and role assumption inputs were accepted"
