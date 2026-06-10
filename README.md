@@ -9,6 +9,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 | Version | Tag | Upstream commit |
 |---------|-----|-----------------|
 | v6.0.0 | [`v6.0.0`](https://github.com/chainguard-actions/aws-actions-configure-aws-credentials/tree/v6.0.0) | [`8df5847`](https://github.com/aws-actions/configure-aws-credentials/commit/8df5847569e6427dd6c4fb1cf565c83acfa8afa7) |
+| v6.2.0 | [`v6.2.0`](https://github.com/chainguard-actions/aws-actions-configure-aws-credentials/tree/v6.2.0) | [`e7f100c`](https://github.com/aws-actions/configure-aws-credentials/commit/e7f100cf4c008499ea8adda475de1042d6975c7b) |
 
 ## Privacy
 
