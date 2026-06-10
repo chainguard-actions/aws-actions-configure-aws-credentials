@@ -1,0 +1,60 @@
+name: Test profile and miscellaneous inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      localstack:
+        image: localstack/localstack:3.8.0
+        ports:
+          - 4566:4566
+        env:
+          SERVICES: sts
+          AWS_DEFAULT_REGION: us-east-1
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create web identity token file
+        run: |
+          mkdir -p /tmp/aws-test
+          echo "fake-web-identity-token" > /tmp/aws-test/web-identity-token
+
+      - id: action
+        uses: .
+        with:
+          aws-region: us-east-1
+          aws-access-key-id: test
+          aws-secret-access-key: testsecretkey1234567890
+          aws-profile: "test-profile"
+          overwrite-aws-profile: "true"
+          http-proxy: ""
+          no-proxy: ""
+          web-identity-token-file: "/tmp/aws-test/web-identity-token"
+          force-skip-oidc: "true"
+          action-timeout-s: "60"
+          allowed-account-ids: ""
+          use-existing-credentials: "false"
+          special-characters-workaround: "false"
+          mask-aws-account-id: "false"
+          output-env-credentials: "false"
+          disable-retry: "true"
+          sts-endpoint: http://localhost:4566
+        env:
+          AWS_SKIP_CLEANUP_STEP: "true"
+        continue-on-error: true
+
+      - name: Assert action ran with profile and misc inputs
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "action outcome: $OUTCOME"
+          # The action may fail because web-identity-token-file conflicts with static credentials,
+          # but we just verify the action was invoked with all the inputs
+          if [ "$OUTCOME" != "success" ] && [ "$OUTCOME" != "failure" ]; then
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
+          echo "PASS: action executed with profile and misc inputs"

@@ -1,0 +1,7 @@
+{
+  "ran": true,
+  "passed": false,
+  "output": "\n\u003e configure-aws-credentials@6.2.0 test\n\u003e npm run lint \u0026\u0026 vitest run \u0026\u0026 npm run build\n\n\n\u003e configure-aws-credentials@6.2.0 lint\n\u003e biome check --error-on-warnings ./src ./test \u0026\u0026 markdownlint -i node_modules -i CHANGELOG.md '**/*.md'\n\nChecked 14 files in 76ms. No fixes applied.\nHARDENING.md:11:81 error MD013/line-length Line length [Expected: 80; Actual: 149]\nHARDENING.md:13 error MD012/no-multiple-blanks Multiple consecutive blank lines [Expected: 1; Actual: 2]\n",
+  "duration_ms": 1067,
+  "exit_code": 1
+}

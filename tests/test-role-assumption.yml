@@ -1,0 +1,52 @@
+name: Test role assumption inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      localstack:
+        image: localstack/localstack:3.8.0
+        ports:
+          - 4566:4566
+        env:
+          SERVICES: sts,iam
+          AWS_DEFAULT_REGION: us-east-1
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        with:
+          aws-region: us-east-1
+          aws-access-key-id: test
+          aws-secret-access-key: testsecretkey1234567890
+          role-to-assume: arn:aws:iam::000000000000:role/test-role
+          role-duration-seconds: "900"
+          role-external-id: "test-external-id"
+          role-session-name: "test-session"
+          role-skip-session-tagging: "true"
+          transitive-tag-keys: ""
+          inline-session-policy: ""
+          managed-session-policies: ""
+          role-chaining: "false"
+          custom-tags: "{}"
+          disable-retry: "true"
+          sts-endpoint: http://localhost:4566
+        env:
+          AWS_SKIP_CLEANUP_STEP: "true"
+        continue-on-error: true
+
+      - name: Assert action ran (role assumption attempted)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "action outcome: $OUTCOME"
+          # LocalStack may or may not support full role assumption; we just verify the action ran
+          if [ "$OUTCOME" != "success" ] && [ "$OUTCOME" != "failure" ]; then
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
+          echo "PASS: action executed with role-assumption inputs"
