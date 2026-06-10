@@ -1,4 +1,4 @@
-name: Test static credentials inputs
+name: Test web identity and proxy inputs
 on:
   workflow_dispatch:
 jobs:
@@ -9,23 +9,21 @@ jobs:
       GITHUB_EVENT_NAME: push
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create fake web identity token file
+        run: |
+          mkdir -p /tmp/aws-test
+          echo "fake-web-identity-token" > /tmp/aws-test/web-identity-token
       - id: action
         uses: .
         continue-on-error: true
         with:
-          aws-region: us-east-1
-          aws-access-key-id: AKIAIOSFODNN7EXAMPLE
-          aws-secret-access-key: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-          aws-session-token: AQoDYXdzEJr//fake-session-token
-          mask-aws-account-id: "false"
-          output-credentials: "true"
-          output-env-credentials: "true"
-          unset-current-credentials: "false"
+          aws-region: eu-west-1
+          role-to-assume: arn:aws:iam::123456789012:role/WebIdentityRole
+          web-identity-token-file: /tmp/aws-test/web-identity-token
+          audience: sts.amazonaws.com
+          http-proxy: "http://proxy.example.com:3128"
+          no-proxy: "169.254.169.254,s3.amazonaws.com"
           disable-retry: "true"
-          retry-max-attempts: "3"
-          action-timeout-s: "30"
-          force-skip-oidc: "true"
-          allowed-account-ids: "123456789012"
       - name: Assert action ran
         run: |
           echo "Action outcome: ${{ steps.action.outcome }}"

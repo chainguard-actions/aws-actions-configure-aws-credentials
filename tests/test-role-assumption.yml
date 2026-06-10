@@ -4,31 +4,33 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Create fake web identity token file
-        run: |
-          echo "fake-web-identity-token" > /tmp/web-identity-token.txt
       - id: action
         uses: .
         continue-on-error: true
         with:
           aws-region: us-west-2
-          aws-access-key-id: AKIAIOSFODNN7EXAMPLE
-          aws-secret-access-key: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
           role-to-assume: arn:aws:iam::123456789012:role/ExampleRole
-          role-chaining: "false"
           role-duration-seconds: "3600"
-          role-external-id: "example-external-id"
-          role-session-name: "GitHubActionsTest"
+          role-external-id: example-external-id
+          role-session-name: TestSession
           role-skip-session-tagging: "true"
-          transitive-tag-keys: "Environment,Team"
-          inline-session-policy: '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":"s3:GetObject","Resource":"*"}]}'
+          transitive-tag-keys: "key1,key2"
+          inline-session-policy: '{"Version":"2012-10-17","Statement":[]}'
           managed-session-policies: "arn:aws:iam::aws:policy/ReadOnlyAccess"
-          web-identity-token-file: "/tmp/web-identity-token.txt"
-          audience: "sts.amazonaws.com"
+          role-chaining: "false"
+          special-characters-workaround: "false"
+          use-existing-credentials: "false"
           disable-retry: "true"
-      - name: Assert action ran (may fail due to fake credentials)
+      - name: Assert action ran
         run: |
           echo "Action outcome: ${{ steps.action.outcome }}"
-          echo "PASS: action step was reached and role assumption inputs were accepted"
+          if [ "${{ steps.action.outcome }}" = "skipped" ]; then
+            echo "FAIL: action was skipped, expected it to run"
+            exit 1
+          fi
+          echo "PASS: action ran (outcome: ${{ steps.action.outcome }})"
