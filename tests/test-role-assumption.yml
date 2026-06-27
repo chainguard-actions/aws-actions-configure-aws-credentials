@@ -1,0 +1,111 @@
+name: Test role assumption inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Start mock STS server
+        run: |
+          python3 -c "
+          import http.server, threading, textwrap, urllib.parse
+
+          class Handler(http.server.BaseHTTPRequestHandler):
+              def do_POST(self):
+                  length = int(self.headers.get('Content-Length', 0))
+                  body_bytes = self.rfile.read(length)
+                  body_str = body_bytes.decode()
+                  params = urllib.parse.parse_qs(body_str)
+                  action = params.get('Action', [''])[0]
+                  if action == 'AssumeRole':
+                      body = textwrap.dedent('''
+                          <AssumeRoleResponse xmlns=\"https://sts.amazonaws.com/doc/2011-06-15/\">
+                            <AssumeRoleResult>
+                              <Credentials>
+                                <AccessKeyId>ASIAIOSFODNN7EXAMPLE</AccessKeyId>
+                                <SecretAccessKey>wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY</SecretAccessKey>
+                                <SessionToken>AQoDYXdzEJr//////////wEaoAK1wvxJY12r2ILDExampleSessionToken</SessionToken>
+                                <Expiration>2099-01-01T00:00:00Z</Expiration>
+                              </Credentials>
+                              <AssumedRoleUser>
+                                <Arn>arn:aws:sts::123456789012:assumed-role/test-role/test-session</Arn>
+                                <AssumedRoleId>AROAIOSFODNN7EXAMPLE:test-session</AssumedRoleId>
+                              </AssumedRoleUser>
+                            </AssumeRoleResult>
+                            <ResponseMetadata>
+                              <RequestId>01234567-89ab-cdef-0123-456789abcdef</RequestId>
+                            </ResponseMetadata>
+                          </AssumeRoleResponse>
+                      ''').strip().encode()
+                  else:
+                      body = textwrap.dedent('''
+                          <GetCallerIdentityResponse xmlns=\"https://sts.amazonaws.com/doc/2011-06-15/\">
+                            <GetCallerIdentityResult>
+                              <Arn>arn:aws:iam::123456789012:user/test</Arn>
+                              <UserId>AKIAIOSFODNN7EXAMPLE</UserId>
+                              <Account>123456789012</Account>
+                            </GetCallerIdentityResult>
+                            <ResponseMetadata>
+                              <RequestId>01234567-89ab-cdef-0123-456789abcdef</RequestId>
+                            </ResponseMetadata>
+                          </GetCallerIdentityResponse>
+                      ''').strip().encode()
+                  self.send_response(200)
+                  self.send_header('Content-Type', 'text/xml')
+                  self.send_header('Content-Length', str(len(body)))
+                  self.end_headers()
+                  self.wfile.write(body)
+              def log_message(self, fmt, *args):
+                  pass
+
+          server = http.server.HTTPServer(('127.0.0.1', 4566), Handler)
+          t = threading.Thread(target=server.serve_forever)
+          t.daemon = True
+          t.start()
+          import time; time.sleep(86400)
+          " &
+          sleep 1
+          echo "Mock STS server started"
+
+      - id: configure-aws
+        uses: .
+        with:
+          aws-region: us-east-1
+          aws-access-key-id: AKIAIOSFODNN7EXAMPLE
+          aws-secret-access-key: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+          role-to-assume: arn:aws:iam::123456789012:role/test-role
+          role-session-name: my-test-session
+          role-duration-seconds: '3600'
+          role-skip-session-tagging: 'true'
+          role-external-id: my-external-id
+          transitive-tag-keys: Environment
+          custom-tags: '{"TestKey":"TestValue"}'
+          sts-endpoint: http://127.0.0.1:4566
+
+      - name: Assert AWS_DEFAULT_REGION is set
+        run: |
+          echo "AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION"
+          if [ "$AWS_DEFAULT_REGION" != "us-east-1" ]; then
+            echo "FAIL: expected AWS_DEFAULT_REGION=us-east-1, got '$AWS_DEFAULT_REGION'"
+            exit 1
+          fi
+          echo "PASS"
+
+      - name: Assert assumed role credentials are set
+        run: |
+          echo "AWS_ACCESS_KEY_ID is set: $([ -n "$AWS_ACCESS_KEY_ID" ] && echo yes || echo no)"
+          echo "AWS_SESSION_TOKEN is set: $([ -n "$AWS_SESSION_TOKEN" ] && echo yes || echo no)"
+          if [ -z "$AWS_ACCESS_KEY_ID" ]; then
+            echo "FAIL: expected AWS_ACCESS_KEY_ID to be set after role assumption"
+            exit 1
+          fi
+          if [ -z "$AWS_SESSION_TOKEN" ]; then
+            echo "FAIL: expected AWS_SESSION_TOKEN to be set after role assumption"
+            exit 1
+          fi
+          echo "PASS"
