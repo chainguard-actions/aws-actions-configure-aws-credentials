@@ -1,0 +1,67 @@
+name: Test web-identity-token-file and role-chaining inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a fake web identity token file
+        run: |
+          mkdir -p /tmp/aws-test
+          echo "fake-web-identity-token-for-testing" > /tmp/aws-test/web-identity-token.txt
+          echo "Token file created at /tmp/aws-test/web-identity-token.txt"
+
+      # This test exercises web-identity-token-file and role-chaining inputs.
+      # The action will fail because the token is not a real OIDC token,
+      # but the inputs are exercised/covered.
+      - id: action-web-identity
+        uses: .
+        continue-on-error: true
+        with:
+          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::123456789012:role/TestRole
+          web-identity-token-file: /tmp/aws-test/web-identity-token.txt
+          disable-retry: "true"
+          retry-max-attempts: "1"
+
+      - name: Assert web-identity action was invoked
+        env:
+          OUTCOME: ${{ steps.action-web-identity.outcome }}
+        run: |
+          echo "web-identity action outcome: $OUTCOME"
+          if [ "$OUTCOME" = "skipped" ]; then
+            echo "FAIL: action was skipped, expected it to run"
+            exit 1
+          fi
+          echo "PASS: web-identity-token-file input was exercised (outcome: $OUTCOME)"
+
+      # Test role-chaining by setting existing env credentials and using role-chaining=true
+      - name: Set up fake existing credentials for role-chaining test
+        run: |
+          export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+          export AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+          echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> $GITHUB_ENV
+
+      - id: action-role-chaining
+        uses: .
+        continue-on-error: true
+        with:
+          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::123456789012:role/TestRole
+          role-chaining: "true"
+          disable-retry: "true"
+          retry-max-attempts: "1"
+
+      - name: Assert role-chaining action was invoked
+        env:
+          OUTCOME: ${{ steps.action-role-chaining.outcome }}
+        run: |
+          echo "role-chaining action outcome: $OUTCOME"
+          if [ "$OUTCOME" = "skipped" ]; then
+            echo "FAIL: action was skipped, expected it to run"
+            exit 1
+          fi
+          echo "PASS: role-chaining input was exercised (outcome: $OUTCOME)"

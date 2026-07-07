@@ -1,0 +1,78 @@
+name: Test http-proxy, no-proxy, action-timeout-s, special-characters-workaround inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Start mock STS server
+        run: |
+          mkdir -p /tmp/mock-sts
+          cat > /tmp/mock-sts/server.py << 'EOF'
+          import http.server
+          import socketserver
+
+          RESPONSE = """<?xml version="1.0" encoding="UTF-8"?>
+          <GetCallerIdentityResponse xmlns="https://sts.amazonaws.com/doc/2011-06-15/">
+            <GetCallerIdentityResult>
+              <Arn>arn:aws:iam::123456789012:user/test-user</Arn>
+              <UserId>AKIAIOSFODNN7EXAMPLE</UserId>
+              <Account>123456789012</Account>
+            </GetCallerIdentityResult>
+            <ResponseMetadata>
+              <RequestId>01234567-89ab-cdef-0123-456789abcdef</RequestId>
+            </ResponseMetadata>
+          </GetCallerIdentityResponse>"""
+
+          class Handler(http.server.BaseHTTPRequestHandler):
+              def do_POST(self):
+                  content_length = int(self.headers.get('Content-Length', 0))
+                  body = self.rfile.read(content_length)
+                  self.send_response(200)
+                  self.send_header('Content-Type', 'text/xml')
+                  self.end_headers()
+                  self.wfile.write(RESPONSE.encode())
+              def log_message(self, format, *args):
+                  pass
+
+          with socketserver.TCPServer(("", 4573), Handler) as httpd:
+              httpd.serve_forever()
+          EOF
+          python3 /tmp/mock-sts/server.py &
+          sleep 1
+          echo "Mock STS server started on port 4573"
+
+      - id: action
+        uses: .
+        with:
+          aws-region: eu-central-1
+          aws-access-key-id: AKIAIOSFODNN7EXAMPLE
+          aws-secret-access-key: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+          sts-endpoint: http://localhost:4573
+          mask-aws-account-id: "false"
+          http-proxy: ""
+          no-proxy: "localhost,127.0.0.1"
+          action-timeout-s: "60"
+          special-characters-workaround: "false"
+
+      - name: Assert AWS_REGION is set to eu-central-1
+        run: |
+          echo "AWS_REGION: $AWS_REGION"
+          if [ "$AWS_REGION" != "eu-central-1" ]; then
+            echo "FAIL: expected AWS_REGION to be 'eu-central-1', got '$AWS_REGION'"
+            exit 1
+          fi
+          echo "PASS: AWS_REGION is correctly set to eu-central-1"
+
+      - name: Assert aws-account-id output is set
+        env:
+          ACCOUNT_ID: ${{ steps.action.outputs.aws-account-id }}
+        run: |
+          echo "aws-account-id: $ACCOUNT_ID"
+          if [ "$ACCOUNT_ID" != "123456789012" ]; then
+            echo "FAIL: expected aws-account-id to be '123456789012', got '$ACCOUNT_ID'"
+            exit 1
+          fi
+          echo "PASS: aws-account-id output is correctly set"

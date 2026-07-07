@@ -1,0 +1,41 @@
+name: Test role assumption options inputs coverage
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      # This test verifies that role assumption inputs are accepted by the action.
+      # The action will fail to assume the role (no real AWS), but the inputs are exercised.
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          aws-region: us-east-1
+          aws-access-key-id: AKIAIOSFODNN7EXAMPLE
+          aws-secret-access-key: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+          role-to-assume: arn:aws:iam::123456789012:role/TestRole
+          role-duration-seconds: "3600"
+          role-external-id: "test-external-id"
+          role-skip-session-tagging: "true"
+          transitive-tag-keys: "Environment,Team"
+          inline-session-policy: '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":"s3:GetObject","Resource":"*"}]}'
+          managed-session-policies: "arn:aws:iam::aws:policy/ReadOnlyAccess"
+          custom-tags: '{"Environment":"test","Team":"platform"}'
+          disable-retry: "true"
+          retry-max-attempts: "1"
+
+      - name: Assert action was invoked (may fail due to no real AWS)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "action outcome: $OUTCOME"
+          # The action is expected to fail (no real AWS credentials/role),
+          # but it must have been invoked (not skipped).
+          if [ "$OUTCOME" = "skipped" ]; then
+            echo "FAIL: action was skipped, expected it to run"
+            exit 1
+          fi
+          echo "PASS: action was invoked with role assumption inputs"

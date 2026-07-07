@@ -1,0 +1,70 @@
+name: Test aws-profile and overwrite-aws-profile inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Start mock STS server
+        run: |
+          mkdir -p /tmp/mock-sts
+          cat > /tmp/mock-sts/server.py << 'EOF'
+          import http.server
+          import socketserver
+
+          RESPONSE = """<?xml version="1.0" encoding="UTF-8"?>
+          <GetCallerIdentityResponse xmlns="https://sts.amazonaws.com/doc/2011-06-15/">
+            <GetCallerIdentityResult>
+              <Arn>arn:aws:iam::123456789012:user/test-user</Arn>
+              <UserId>AKIAIOSFODNN7EXAMPLE</UserId>
+              <Account>123456789012</Account>
+            </GetCallerIdentityResult>
+            <ResponseMetadata>
+              <RequestId>01234567-89ab-cdef-0123-456789abcdef</RequestId>
+            </ResponseMetadata>
+          </GetCallerIdentityResponse>"""
+
+          class Handler(http.server.BaseHTTPRequestHandler):
+              def do_POST(self):
+                  content_length = int(self.headers.get('Content-Length', 0))
+                  body = self.rfile.read(content_length)
+                  self.send_response(200)
+                  self.send_header('Content-Type', 'text/xml')
+                  self.end_headers()
+                  self.wfile.write(RESPONSE.encode())
+              def log_message(self, format, *args):
+                  pass
+
+          with socketserver.TCPServer(("", 4571), Handler) as httpd:
+              httpd.serve_forever()
+          EOF
+          python3 /tmp/mock-sts/server.py &
+          sleep 1
+          echo "Mock STS server started on port 4571"
+
+      - id: action
+        uses: .
+        with:
+          aws-region: us-east-1
+          aws-access-key-id: AKIAIOSFODNN7EXAMPLE
+          aws-secret-access-key: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+          sts-endpoint: http://localhost:4571
+          mask-aws-account-id: "false"
+          aws-profile: test-profile
+          overwrite-aws-profile: "true"
+
+      - name: Assert AWS credentials profile file exists
+        run: |
+          echo "Checking ~/.aws/credentials for test-profile..."
+          if [ ! -f "$HOME/.aws/credentials" ]; then
+            echo "FAIL: ~/.aws/credentials file not found"
+            exit 1
+          fi
+          if ! grep -q "\[test-profile\]" "$HOME/.aws/credentials"; then
+            echo "FAIL: [test-profile] section not found in ~/.aws/credentials"
+            cat "$HOME/.aws/credentials"
+            exit 1
+          fi
+          echo "PASS: test-profile found in ~/.aws/credentials"
