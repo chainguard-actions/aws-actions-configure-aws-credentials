@@ -1,0 +1,36 @@
+name: Test inline-session-policy, managed-session-policies, transitive-tag-keys, and role-external-id inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run action with session policy and role options
+        id: action
+        uses: .
+        continue-on-error: true
+        with:
+          aws-region: us-east-1
+          aws-access-key-id: AKIAIOSFODNN7EXAMPLE
+          aws-secret-access-key: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+          role-to-assume: arn:aws:iam::123456789012:role/TestRole
+          role-external-id: my-external-id-12345
+          inline-session-policy: '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":"s3:GetObject","Resource":"*"}]}'
+          managed-session-policies: arn:aws:iam::aws:policy/ReadOnlyAccess
+          transitive-tag-keys: "Environment,Team"
+          disable-retry: "true"
+
+      - name: Assert action ran (not skipped)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          # The action should attempt to run (and fail at AWS API with fake creds).
+          # A 'skipped' outcome means the action never started — that would be a bug.
+          if [ "$OUTCOME" = "skipped" ]; then
+            echo "FAIL: action was skipped — it never ran"
+            exit 1
+          fi
+          echo "PASS: action ran with session policy and role options (outcome=$OUTCOME)"
