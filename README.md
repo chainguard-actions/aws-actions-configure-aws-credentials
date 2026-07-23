@@ -14,6 +14,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 | v6.2.0 | [`v6.2.0`](https://github.com/chainguard-actions/aws-actions-configure-aws-credentials/tree/v6.2.0) | [`e7f100c`](https://github.com/aws-actions/configure-aws-credentials/commit/e7f100cf4c008499ea8adda475de1042d6975c7b) |
 | v6.2.1 | [`v6.2.1`](https://github.com/chainguard-actions/aws-actions-configure-aws-credentials/tree/v6.2.1) | [`254c19b`](https://github.com/aws-actions/configure-aws-credentials/commit/254c19bd240aabef8777f48595e9d2d7b972184b) |
 | v6.2.2 | [`v6.2.2`](https://github.com/chainguard-actions/aws-actions-configure-aws-credentials/tree/v6.2.2) | [`517a711`](https://github.com/aws-actions/configure-aws-credentials/commit/517a711dbcd0e402f90c77e7e2f81e849156e31d) |
+| v6.2.3 | [`v6.2.3`](https://github.com/chainguard-actions/aws-actions-configure-aws-credentials/tree/v6.2.3) | [`e6de054`](https://github.com/aws-actions/configure-aws-credentials/commit/e6de054238d6b7531b4efff3b6587d9aade6a06c) |
 
 ## Privacy
 
