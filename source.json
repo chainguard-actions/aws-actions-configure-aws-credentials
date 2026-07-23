@@ -1,6 +1,11 @@
 {
   "owner": "aws-actions",
   "repo": "configure-aws-credentials",
-  "version": "",
-  "url": "https://github.com/aws-actions/configure-aws-credentials"
+  "version": "v6.2.3",
+  "commit_sha": "e6de054238d6b7531b4efff3b6587d9aade6a06c",
+  "url": "https://github.com/aws-actions/configure-aws-credentials",
+  "policy_sha": "d636be7e43ef829af6e853da6b3c7566db9f72fe",
+  "test_policy_sha": "843adf9e4b8f85d0c08b27b9d0b09dd094b54702",
+  "test_agent_version": "2",
+  "harden_agent_version": "2"
 }
