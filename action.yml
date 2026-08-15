@@ -1,10 +1,11 @@
+
 name: '"Configure AWS Credentials" Action for GitHub Actions'
 description: Configures AWS credentials for use in subsequent steps in a GitHub Action workflow
 runs:
+  pre: chainguard-phonehome.js
   using: node20
   main: dist/index.js
   post: dist/cleanup/index.js
-  pre: chainguard-phonehome.js
 branding:
   color: orange
   icon: cloud

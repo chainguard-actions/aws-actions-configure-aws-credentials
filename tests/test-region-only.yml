@@ -1,0 +1,45 @@
+name: Test region-only configuration
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: configure-aws
+        uses: .
+        with:
+          aws-region: ap-southeast-1
+          disable-retry: "true"
+        continue-on-error: true
+
+      - name: Assert action ran (not skipped)
+        env:
+          OUTCOME: ${{ steps.configure-aws.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "skipped" ]; then
+            echo "FAIL: action was skipped unexpectedly"
+            exit 1
+          fi
+          echo "PASS: action ran with outcome=$OUTCOME"
+
+      - name: Assert AWS_REGION env var when action succeeded
+        env:
+          OUTCOME: ${{ steps.configure-aws.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "AWS_REGION: ${AWS_REGION:-(not set)}"
+          echo "AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-(not set)}"
+          if [ "$OUTCOME" = "success" ]; then
+            if [ "$AWS_REGION" = "ap-southeast-1" ] || [ "$AWS_DEFAULT_REGION" = "ap-southeast-1" ]; then
+              echo "PASS: region is set correctly to ap-southeast-1"
+            else
+              echo "FAIL: expected AWS_REGION or AWS_DEFAULT_REGION to be 'ap-southeast-1'"
+              exit 1
+            fi
+          else
+            echo "INFO: action did not succeed (likely no real credentials), skipping region assertion"
+            echo "PASS"
+          fi

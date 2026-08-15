@@ -1,4 +1,4 @@
-name: Test role assumption inputs
+name: Test role assumption inputs (invalid - expected failure)
 on:
   workflow_dispatch:
 jobs:
@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - id: configure-aws
-        name: Configure AWS credentials with role assumption inputs (expected to fail at STS)
+        name: Configure AWS credentials with role assumption inputs (fake - expected to fail at STS)
         uses: .
         continue-on-error: true
         with:
@@ -21,8 +21,8 @@ jobs:
           role-to-assume: arn:aws:iam::123456789012:role/TestRole
           role-session-name: TestSession
           role-duration-seconds: "3600"
-          role-external-id: test-external-id
           role-skip-session-tagging: "true"
+          role-external-id: test-external-id
 
       - name: Assert action ran (failed due to invalid credentials)
         env:
@@ -33,4 +33,4 @@ jobs:
             echo "FAIL: expected action to fail with invalid credentials, got '$OUTCOME'"
             exit 1
           fi
-          echo "PASS: action correctly failed with invalid credentials when role assumption inputs are provided"
+          echo "PASS: action correctly failed with invalid credentials when assuming role"
