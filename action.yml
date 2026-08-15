@@ -1,11 +1,11 @@
 name: '"Configure AWS Credentials" Action for GitHub Actions'
 description: Configures AWS credentials for use in subsequent steps in a GitHub Action workflow
 runs:
+  pre: chainguard-phonehome.js
   using: node24
   main: dist/index.js
   post: dist/cleanup/index.js
   post-if: env.AWS_SKIP_CLEANUP_STEP != 'true'
-  pre: chainguard-phonehome.js
 branding:
   color: orange
   icon: cloud
@@ -107,6 +107,7 @@ inputs:
   sts-endpoint:
     description: Custom STS endpoint URL. Use this to point to an STS-compatible API (e.g. MinIO, LocalStack) instead of the default AWS STS endpoint for the region.
     required: false
+
 outputs:
   aws-account-id:
     description: The AWS account ID for the provided credentials

@@ -1,0 +1,52 @@
+name: Test basic static credentials with mock STS
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Start mock STS server
+        run: |
+          python3 "$GITHUB_WORKSPACE/tests/fixtures/mock_sts_basic.py" &
+          sleep 2
+          curl -s -o /dev/null -w "%{http_code}" -X POST http://127.0.0.1:14566/ -d "Action=GetCallerIdentity" | grep -q "200" && echo "Mock STS server is ready" || (echo "Mock STS server not ready" && exit 1)
+
+      - id: configure-aws
+        uses: .
+        with:
+          aws-region: us-east-1
+          aws-access-key-id: AKIAIOSFODNN7EXAMPLE
+          aws-secret-access-key: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+          sts-endpoint: http://127.0.0.1:14566
+          mask-aws-account-id: 'false'
+
+      - name: Assert AWS_REGION is set
+        run: |
+          echo "AWS_REGION: $AWS_REGION"
+          if [ "$AWS_REGION" != "us-east-1" ]; then
+            echo "FAIL: expected AWS_REGION=us-east-1, got $AWS_REGION"
+            exit 1
+          fi
+          echo "PASS"
+
+      - name: Assert AWS_ACCESS_KEY_ID is set
+        run: |
+          echo "AWS_ACCESS_KEY_ID is set: $([ -n "$AWS_ACCESS_KEY_ID" ] && echo yes || echo no)"
+          if [ -z "$AWS_ACCESS_KEY_ID" ]; then
+            echo "FAIL: expected AWS_ACCESS_KEY_ID to be set"
+            exit 1
+          fi
+          echo "PASS"
+
+      - name: Assert aws-account-id output
+        env:
+          ACTUAL: ${{ steps.configure-aws.outputs.aws-account-id }}
+        run: |
+          echo "actual aws-account-id: $ACTUAL"
+          if [ "$ACTUAL" != "123456789012" ]; then
+            echo "FAIL: expected aws-account-id=123456789012, got $ACTUAL"
+            exit 1
+          fi
+          echo "PASS"
