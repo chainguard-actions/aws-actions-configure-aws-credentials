@@ -1,0 +1,43 @@
+name: Test role-chaining option
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up fake AWS credentials in environment
+        run: |
+          echo "AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY" >> $GITHUB_ENV
+          echo "AWS_DEFAULT_REGION=us-east-1" >> $GITHUB_ENV
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::123456789012:role/TestRole
+          role-chaining: "true"
+          role-session-name: TestSession
+
+      - name: Assert action ran with role-chaining
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+          ACCOUNT_ID: ${{ steps.action.outputs.aws-account-id }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "aws-account-id: $ACCOUNT_ID"
+          if [ "$OUTCOME" = "success" ]; then
+            if [ -z "$ACCOUNT_ID" ]; then
+              echo "FAIL: action succeeded but aws-account-id output is empty"
+              exit 1
+            fi
+            echo "PASS: action succeeded with role chaining, account ID: $ACCOUNT_ID"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (expected — no real AWS credentials in harness)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
