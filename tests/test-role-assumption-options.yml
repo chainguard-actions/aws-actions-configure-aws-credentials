@@ -1,4 +1,4 @@
-name: Test web identity token file option
+name: Test advanced role assumption options
 on:
   workflow_dispatch:
 jobs:
@@ -7,19 +7,22 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Create a fake web identity token file
-        run: |
-          echo "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiaXNzIjoiaHR0cHM6Ly9leGFtcGxlLmNvbSIsImF1ZCI6InN0cy5hbWF6b25hd3MuY29tIiwiZXhwIjo5OTk5OTk5OTk5fQ.fake" > /tmp/web-identity-token.txt
-
       - id: action
         uses: .
         continue-on-error: true
         with:
           aws-region: us-east-1
+          aws-access-key-id: AKIAIOSFODNN7EXAMPLE
+          aws-secret-access-key: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
           role-to-assume: arn:aws:iam::123456789012:role/TestRole
-          web-identity-token-file: /tmp/web-identity-token.txt
+          role-duration-seconds: "900"
+          role-external-id: "my-external-id"
+          role-skip-session-tagging: "true"
+          transitive-tag-keys: "Environment,Team"
+          inline-session-policy: '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":"s3:GetObject","Resource":"*"}]}'
+          managed-session-policies: "arn:aws:iam::aws:policy/ReadOnlyAccess"
 
-      - name: Assert action ran with web identity token file
+      - name: Assert action ran with advanced role assumption options
         env:
           OUTCOME: ${{ steps.action.outcome }}
           ACCOUNT_ID: ${{ steps.action.outputs.aws-account-id }}

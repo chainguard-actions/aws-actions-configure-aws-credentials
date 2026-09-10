@@ -1,4 +1,4 @@
-name: Test web identity token file option
+name: Test proxy options
 on:
   workflow_dispatch:
 jobs:
@@ -7,19 +7,17 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Create a fake web identity token file
-        run: |
-          echo "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiaXNzIjoiaHR0cHM6Ly9leGFtcGxlLmNvbSIsImF1ZCI6InN0cy5hbWF6b25hd3MuY29tIiwiZXhwIjo5OTk5OTk5OTk5fQ.fake" > /tmp/web-identity-token.txt
-
       - id: action
         uses: .
         continue-on-error: true
         with:
           aws-region: us-east-1
-          role-to-assume: arn:aws:iam::123456789012:role/TestRole
-          web-identity-token-file: /tmp/web-identity-token.txt
+          aws-access-key-id: AKIAIOSFODNN7EXAMPLE
+          aws-secret-access-key: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+          http-proxy: "http://proxy.example.com:3128"
+          no-proxy: "169.254.169.254,s3.amazonaws.com"
 
-      - name: Assert action ran with web identity token file
+      - name: Assert action ran with proxy options
         env:
           OUTCOME: ${{ steps.action.outcome }}
           ACCOUNT_ID: ${{ steps.action.outputs.aws-account-id }}
