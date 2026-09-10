@@ -1,4 +1,4 @@
-name: Test AWS profile configuration inputs
+name: Test AWS profile configuration
 on:
   workflow_dispatch:
 jobs:
@@ -15,8 +15,7 @@ jobs:
           aws-secret-access-key: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
           aws-profile: test-profile
           overwrite-aws-profile: "true"
-          output-env-credentials: "true"
-      - name: Assert action ran (succeeded or failed gracefully with fake creds/profile)
+      - name: Assert action ran (succeeded or failed gracefully with fake credentials)
         env:
           OUTCOME: ${{ steps.action.outcome }}
           ACCOUNT_ID: ${{ steps.action.outputs.aws-account-id }}

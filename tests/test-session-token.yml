@@ -1,4 +1,4 @@
-name: Test session token and credential management inputs
+name: Test session token and credential output options
 on:
   workflow_dispatch:
 jobs:
@@ -10,13 +10,13 @@ jobs:
         uses: .
         continue-on-error: true
         with:
-          aws-region: us-west-2
+          aws-region: us-east-1
           aws-access-key-id: AKIAIOSFODNN7EXAMPLE
           aws-secret-access-key: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-          aws-session-token: AQoDYXdzEJr//EXAMPLETOKEN
+          aws-session-token: FakeSessionToken123
           unset-current-credentials: "true"
-          use-existing-credentials: "false"
-      - name: Assert action ran (succeeded or failed gracefully with fake session token)
+          output-env-credentials: "true"
+      - name: Assert action ran (succeeded or failed gracefully with fake credentials)
         env:
           OUTCOME: ${{ steps.action.outcome }}
           ACCOUNT_ID: ${{ steps.action.outputs.aws-account-id }}
@@ -30,7 +30,7 @@ jobs:
             fi
             echo "PASS: got account ID '$ACCOUNT_ID'"
           elif [ "$OUTCOME" = "failure" ]; then
-            echo "PASS: action failed gracefully (fake session token rejected by STS)"
+            echo "PASS: action failed gracefully (fake credentials rejected by STS)"
           else
             echo "FAIL: unexpected outcome '$OUTCOME'"
             exit 1

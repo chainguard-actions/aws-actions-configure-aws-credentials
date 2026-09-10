@@ -1,4 +1,4 @@
-name: Test advanced options inputs
+name: Test advanced options
 on:
   workflow_dispatch:
 jobs:
@@ -16,12 +16,11 @@ jobs:
           aws-region: us-east-1
           aws-access-key-id: AKIAIOSFODNN7EXAMPLE
           aws-secret-access-key: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-          role-to-assume: arn:aws:iam::123456789012:role/TestRole
-          allowed-account-ids: "123456789012"
-          sts-endpoint: https://sts.amazonaws.com
-          role-chaining: "false"
+          allowed-account-ids: "123456789012,987654321098"
+          action-timeout-s: "60"
+          sts-endpoint: https://sts.us-east-1.amazonaws.com
           web-identity-token-file: /tmp/web-identity-token.txt
-      - name: Assert action ran (succeeded or failed gracefully with advanced options)
+      - name: Assert action ran (succeeded or failed gracefully with fake credentials)
         env:
           OUTCOME: ${{ steps.action.outcome }}
           ACCOUNT_ID: ${{ steps.action.outputs.aws-account-id }}
@@ -35,7 +34,7 @@ jobs:
             fi
             echo "PASS: got account ID '$ACCOUNT_ID'"
           elif [ "$OUTCOME" = "failure" ]; then
-            echo "PASS: action failed gracefully (fake credentials/role rejected by STS)"
+            echo "PASS: action failed gracefully (fake credentials rejected by STS)"
           else
             echo "FAIL: unexpected outcome '$OUTCOME'"
             exit 1

@@ -18,7 +18,7 @@ jobs:
           role-duration-seconds: "3600"
           role-skip-session-tagging: "true"
           role-external-id: test-external-id
-      - name: Assert action ran (succeeded or failed gracefully with fake creds/role)
+      - name: Assert action ran (succeeded or failed gracefully with fake credentials)
         env:
           OUTCOME: ${{ steps.action.outcome }}
           ACCOUNT_ID: ${{ steps.action.outputs.aws-account-id }}
@@ -32,7 +32,7 @@ jobs:
             fi
             echo "PASS: got account ID '$ACCOUNT_ID'"
           elif [ "$OUTCOME" = "failure" ]; then
-            echo "PASS: action failed gracefully (fake credentials/role rejected by STS)"
+            echo "PASS: action failed gracefully (fake credentials rejected by STS)"
           else
             echo "FAIL: unexpected outcome '$OUTCOME'"
             exit 1

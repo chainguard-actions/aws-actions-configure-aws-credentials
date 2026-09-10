@@ -1,4 +1,4 @@
-name: Test session policies and tags
+name: Test proxy settings
 on:
   workflow_dispatch:
 jobs:
@@ -13,11 +13,8 @@ jobs:
           aws-region: us-east-1
           aws-access-key-id: AKIAIOSFODNN7EXAMPLE
           aws-secret-access-key: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-          role-to-assume: arn:aws:iam::123456789012:role/TestRole
-          inline-session-policy: '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":"s3:GetObject","Resource":"*"}]}'
-          managed-session-policies: arn:aws:iam::aws:policy/ReadOnlyAccess
-          transitive-tag-keys: Environment,Team
-          custom-tags: '{"Environment":"test","Team":"platform"}'
+          http-proxy: http://proxy.example.com:3128
+          no-proxy: localhost,127.0.0.1
       - name: Assert action ran (succeeded or failed gracefully with fake credentials)
         env:
           OUTCOME: ${{ steps.action.outcome }}
