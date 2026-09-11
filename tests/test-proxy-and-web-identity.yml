@@ -1,4 +1,4 @@
-name: Test role assumption inputs
+name: Test http-proxy, web-identity-token-file, and use-existing-credentials inputs
 on:
   workflow_dispatch:
 jobs:
@@ -6,18 +6,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create a fake web identity token file
+        run: |
+          echo "fake-web-identity-token" > /tmp/web-identity-token.txt
       - id: action
         uses: .
         continue-on-error: true
         with:
           aws-region: us-east-1
-          aws-access-key-id: AKIAIOSFODNN7EXAMPLE
-          aws-secret-access-key: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
           role-to-assume: arn:aws:iam::123456789012:role/TestRole
-          role-session-name: TestSession
-          role-duration-seconds: "3600"
-          role-skip-session-tagging: "true"
-          role-external-id: test-external-id
+          web-identity-token-file: /tmp/web-identity-token.txt
+          http-proxy: http://proxy.example.com:3128
+          use-existing-credentials: "false"
       - name: Assert action ran (fails gracefully without real AWS credentials)
         env:
           OUTCOME: ${{ steps.action.outcome }}
