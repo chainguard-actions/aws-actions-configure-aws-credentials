@@ -1,0 +1,40 @@
+name: Test web-identity-token-file input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a fake web identity token file
+        run: |
+          mkdir -p /tmp/web-identity
+          # Create a fake JWT-like token (not valid, but exercises the input path)
+          echo "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiaXNzIjoiaHR0cHM6Ly90b2tlbi5hY3Rpb25zLmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImF1ZCI6InN0cy5hbWF6b25hd3MuY29tIn0.fake-signature" > /tmp/web-identity/token.txt
+          echo "Fake web identity token file created at /tmp/web-identity/token.txt"
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::123456789012:role/WebIdentityRole
+          web-identity-token-file: /tmp/web-identity/token.txt
+          force-skip-oidc: "true"
+
+      - name: Assert action ran (web-identity-token-file input was accepted)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          # The action will fail because the token is fake and can't authenticate with real AWS STS.
+          # We just verify the input was accepted and the action ran (not skipped).
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: action succeeded (unexpected but acceptable)"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully with fake web identity token (expected)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi

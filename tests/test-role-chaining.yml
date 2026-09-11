@@ -1,4 +1,4 @@
-name: Test role assumption options with mock STS endpoint
+name: Test role-chaining with mock STS endpoint
 on:
   workflow_dispatch:
 jobs:
@@ -37,7 +37,7 @@ jobs:
                 <Expiration>2099-01-01T00:00:00Z</Expiration>
               </Credentials>
               <AssumedRoleUser>
-                <Arn>arn:aws:sts::123456789012:assumed-role/MyRole/GitHubActions</Arn>
+                <Arn>arn:aws:sts::123456789012:assumed-role/ChainedRole/GitHubActions</Arn>
                 <AssumedRoleId>AROAIOSFODNN7EXAMPLE:GitHubActions</AssumedRoleId>
               </AssumedRoleUser>
             </AssumeRoleResult>
@@ -62,29 +62,28 @@ jobs:
               def log_message(self, format, *args):
                   pass
 
-          with socketserver.TCPServer(("", 4576), Handler) as httpd:
+          with socketserver.TCPServer(("", 4577), Handler) as httpd:
               httpd.serve_forever()
           EOF
           python3 /tmp/mock-sts/server.py &
           sleep 1
-          echo "Mock STS server started on port 4576"
+          echo "Mock STS server started on port 4577"
+
+      # Set up initial credentials in the environment for role-chaining to use
+      - name: Set up initial credentials in environment
+        run: |
+          echo "AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY" >> $GITHUB_ENV
+          echo "AWS_DEFAULT_REGION=us-east-1" >> $GITHUB_ENV
 
       - id: action
         uses: .
         with:
           aws-region: us-east-1
-          aws-access-key-id: AKIAIOSFODNN7EXAMPLE
-          aws-secret-access-key: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-          sts-endpoint: http://localhost:4576
+          sts-endpoint: http://localhost:4577
           mask-aws-account-id: "false"
-          role-to-assume: arn:aws:iam::123456789012:role/MyRole
-          role-duration-seconds: "3600"
-          role-skip-session-tagging: "true"
-          role-external-id: "my-external-id"
-          transitive-tag-keys: ""
-          custom-tags: '{"Environment":"test"}'
-          inline-session-policy: ""
-          managed-session-policies: ""
+          role-to-assume: arn:aws:iam::123456789012:role/ChainedRole
+          role-chaining: "true"
 
       - name: Assert AWS_REGION is set
         run: |
