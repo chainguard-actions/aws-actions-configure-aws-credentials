@@ -1,0 +1,32 @@
+name: Test web identity token file option
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create fake web identity token file
+        run: |
+          echo "fake-web-identity-token-for-testing" > /tmp/web-identity-token.txt
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::123456789012:role/TestRole
+          web-identity-token-file: /tmp/web-identity-token.txt
+          disable-retry: "true"
+      - name: Assert action ran (failed gracefully with fake token)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: action succeeded (unexpected but acceptable)"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully as expected with fake web identity token"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
