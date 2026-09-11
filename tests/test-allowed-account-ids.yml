@@ -1,4 +1,4 @@
-name: Test retry and timeout options
+name: Test allowed-account-ids input
 on:
   workflow_dispatch:
 jobs:
@@ -9,23 +9,20 @@ jobs:
 
       - name: Start mock STS server
         run: |
-          python3 "$GITHUB_WORKSPACE/tests/fixtures/mock_sts_retry.py" &
+          python3 "$GITHUB_WORKSPACE/tests/fixtures/mock_sts_basic.py" &
           sleep 2
-          curl -s -o /dev/null -w "%{http_code}" -X POST http://127.0.0.1:14570/ -d "Action=GetCallerIdentity" | grep -q "200" && echo "Mock STS server is ready" || (echo "Mock STS server not ready" && exit 1)
+          curl -s -o /dev/null -w "%{http_code}" -X POST http://127.0.0.1:14566/ -d "Action=GetCallerIdentity" | grep -q "200" && echo "Mock STS server is ready" || (echo "Mock STS server not ready" && exit 1)
 
+      # The mock STS server returns account 123456789012; allowed-account-ids matches it.
       - id: configure-aws
         uses: .
         with:
           aws-region: us-east-1
           aws-access-key-id: AKIAIOSFODNN7EXAMPLE
           aws-secret-access-key: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-          sts-endpoint: http://127.0.0.1:14570
+          sts-endpoint: http://127.0.0.1:14566
           mask-aws-account-id: 'false'
-          disable-retry: 'false'
-          retry-max-attempts: '3'
-          special-characters-workaround: 'false'
-          force-skip-oidc: 'true'
-          action-timeout-s: '60'
+          allowed-account-ids: '123456789012'
 
       - name: Assert AWS_REGION is set
         run: |
@@ -36,13 +33,13 @@ jobs:
           fi
           echo "PASS"
 
-      - name: Assert aws-account-id output
+      - name: Assert aws-account-id output matches allowed account
         env:
           ACTUAL: ${{ steps.configure-aws.outputs.aws-account-id }}
         run: |
           echo "actual aws-account-id: $ACTUAL"
-          if [ "$ACTUAL" != "555566667777" ]; then
-            echo "FAIL: expected aws-account-id=555566667777, got $ACTUAL"
+          if [ "$ACTUAL" != "123456789012" ]; then
+            echo "FAIL: expected aws-account-id=123456789012, got $ACTUAL"
             exit 1
           fi
           echo "PASS"
