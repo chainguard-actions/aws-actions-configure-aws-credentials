@@ -1,4 +1,4 @@
-name: Test aws-profile and overwrite-aws-profile inputs
+name: Test special-characters-workaround and use-existing-credentials inputs
 on:
   workflow_dispatch:
 jobs:
@@ -13,8 +13,8 @@ jobs:
           aws-region: "us-east-1"
           aws-access-key-id: "AKIAIOSFODNN7EXAMPLE"
           aws-secret-access-key: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-          aws-profile: "test-profile"
-          overwrite-aws-profile: "true"
+          special-characters-workaround: "false"
+          use-existing-credentials: "false"
       - name: Assert action ran (failed gracefully with fake credentials)
         env:
           OUTCOME: ${{ steps.action.outcome }}

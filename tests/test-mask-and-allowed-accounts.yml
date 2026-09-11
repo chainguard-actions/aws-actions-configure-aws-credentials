@@ -1,4 +1,4 @@
-name: Test aws-profile and overwrite-aws-profile inputs
+name: Test mask-aws-account-id and allowed-account-ids inputs
 on:
   workflow_dispatch:
 jobs:
@@ -13,8 +13,8 @@ jobs:
           aws-region: "us-east-1"
           aws-access-key-id: "AKIAIOSFODNN7EXAMPLE"
           aws-secret-access-key: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-          aws-profile: "test-profile"
-          overwrite-aws-profile: "true"
+          mask-aws-account-id: "true"
+          allowed-account-ids: "123456789012,987654321098"
       - name: Assert action ran (failed gracefully with fake credentials)
         env:
           OUTCOME: ${{ steps.action.outcome }}
