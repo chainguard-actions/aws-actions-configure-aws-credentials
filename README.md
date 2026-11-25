@@ -18,6 +18,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 | v6.2.3 | [`v6.2.3`](https://github.com/chainguard-actions/aws-actions-configure-aws-credentials/tree/v6.2.3) | [`e6de054`](https://github.com/aws-actions/configure-aws-credentials/commit/e6de054238d6b7531b4efff3b6587d9aade6a06c) | [`HARDENING.md`](https://github.com/chainguard-actions/aws-actions-configure-aws-credentials/blob/v6.2.3/HARDENING.md) |
 | v6.2.4 | [`v6.2.4`](https://github.com/chainguard-actions/aws-actions-configure-aws-credentials/tree/v6.2.4) | [`cbe3b39`](https://github.com/aws-actions/configure-aws-credentials/commit/cbe3b392738ccf3f987d68400dafcf4b0624a56c) | [`HARDENING.md`](https://github.com/chainguard-actions/aws-actions-configure-aws-credentials/blob/v6.2.4/HARDENING.md) |
 | v6.3.0 | [`v6.3.0`](https://github.com/chainguard-actions/aws-actions-configure-aws-credentials/tree/v6.3.0) | [`e125382`](https://github.com/aws-actions/configure-aws-credentials/commit/e1253824e5c10ff9df46874f81ed3ec929e19cfd) | [`HARDENING.md`](https://github.com/chainguard-actions/aws-actions-configure-aws-credentials/blob/v6.3.0/HARDENING.md) |
+| v6.3.1 | [`v6.3.1`](https://github.com/chainguard-actions/aws-actions-configure-aws-credentials/tree/v6.3.1) | [`4566689`](https://github.com/aws-actions/configure-aws-credentials/commit/45666896f5d8e0f10ae255413f3a4cdd03bdc8f5) | [`HARDENING.md`](https://github.com/chainguard-actions/aws-actions-configure-aws-credentials/blob/v6.3.1/HARDENING.md) |
 
 ## Privacy
 
