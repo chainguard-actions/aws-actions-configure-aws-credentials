@@ -1,0 +1,58 @@
+{
+  "name": "configure-aws-credentials",
+  "description": "A GitHub Action to configure AWS credentials",
+  "version": "6.3.1",
+  "scripts": {
+    "build": "tsc",
+    "lint": "biome check --error-on-warnings ./src ./test && markdownlint -i node_modules -i CHANGELOG.md '**/*.md'",
+    "lint:fix": "biome check --write ./src ./test && markdownlint -i node_modules -i CHANGELOG.md -f '**/*.md'",
+    "package": "esbuild src/index.ts --bundle --platform=node --target=node24 --outfile=dist/index.js && esbuild src/cleanup/index.ts --bundle --platform=node --target=node24 --outfile=dist/cleanup/index.js && npm run license",
+    "test": "npm run lint && vitest run && npm run build",
+    "clean": "del-cli coverage test-reports node_modules",
+    "license": "generate-license-file --config ./.generatelicensefile.json"
+  },
+  "author": {
+    "name": "Amazon.com, Inc. or its affiliates",
+    "url": "https://aws.amazon.com",
+    "organization": true
+  },
+  "devDependencies": {
+    "@aws-sdk/credential-provider-env": "^3.972.85",
+    "@biomejs/biome": "2.6.8",
+    "@smithy/property-provider": "^4.5.2",
+    "@types/node": "^26.6.6",
+    "@vitest/coverage-v8": "5.1.1",
+    "aws-sdk-client-mock": "^4.1.0",
+    "esbuild": "^0.28.2",
+    "generate-license-file": "^4.2.5",
+    "json-schema": "^0.4.0",
+    "markdownlint-cli": "^0.50.0",
+    "memfs": "^4.80.1",
+    "standard-version": "^9.5.0",
+    "typescript": "^7.0.2",
+    "vitest": "5.1.1"
+  },
+  "dependencies": {
+    "@actions/core": "^3.0.1",
+    "@aws-sdk/client-sts": "^3.1175.0",
+    "@aws-sdk/credential-provider-node": "^3.972.92",
+    "@smithy/node-http-handler": "^4.14.2",
+    "proxy-agent": "^8.0.3"
+  },
+  "keywords": [
+    "aws",
+    "github",
+    "github-action"
+  ],
+  "engines": {
+    "node": ">= 16.3.0"
+  },
+  "main": "build/index.js",
+  "license": "MIT",
+  "homepage": "https://github.com/aws-actions/configure-aws-credentials",
+  "bugs": {
+    "url": "https://github.com/aws-actions/configure-aws-credentials/issues"
+  },
+  "types": "build/index.d.ts",
+  "private": true
+}

@@ -1,6 +1,16 @@
 {
   "owner": "aws-actions",
   "repo": "configure-aws-credentials",
-  "version": "",
-  "url": "https://github.com/aws-actions/configure-aws-credentials"
+  "version": "v6.3.1",
+  "commit_sha": "45666896f5d8e0f10ae255413f3a4cdd03bdc8f5",
+  "url": "https://github.com/aws-actions/configure-aws-credentials",
+  "policy_sha": "374911c4be584df24e6da57af2d990570ef0f859",
+  "test_policy_sha": "843adf9e4b8f85d0c08b27b9d0b09dd094b54702",
+  "test_agent_version": "2",
+  "harden_agent_version": "2",
+  "dist_artifact": {
+    "gcs_uri": "gs://patch-actions-node-artifacts/dist-artifacts/aws-actions/configure-aws-credentials/v6.3.1/sha256-6e7f4c7323c12941053d7fdf0ddee6d4917d007bb9efa64610ed92ad1c112f84.tar.gz",
+    "sha256": "6e7f4c7323c12941053d7fdf0ddee6d4917d007bb9efa64610ed92ad1c112f84",
+    "size_bytes": 816681
+  }
 }
